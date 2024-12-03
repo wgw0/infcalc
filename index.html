@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Compound Interest Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,6 +41,9 @@
     button:hover {
       background-color: #0056b3;
     }
+    #chartContainer {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -66,9 +70,14 @@
     </div>
     <button onclick="calculateCompoundInterest()">Calculate</button>
     <h3 id="result">Final Amount: £</h3>
+    <div id="chartContainer">
+      <canvas id="interestChart" width="400" height="200"></canvas>
+    </div>
   </div>
 
   <script>
+    let interestChart; // Reference to the chart instance
+
     function calculateCompoundInterest() {
       // Get user inputs
       const initialSum = parseFloat(document.getElementById("initialSum").value);
@@ -90,12 +99,59 @@
 
       // Compound interest calculation
       let finalAmount = initialSum;
+      const amounts = [];
       for (let day = 0; day < days; day++) {
         finalAmount += finalAmount * dailyRate;
+        amounts.push(finalAmount);
       }
 
       // Display result
       document.getElementById("result").textContent = `Final Amount: £${finalAmount.toFixed(2)}`;
+
+      // Render chart
+      renderChart(amounts);
+    }
+
+    function renderChart(data) {
+      const ctx = document.getElementById("interestChart").getContext("2d");
+      const labels = Array.from({ length: data.length }, (_, i) => i + 1);
+
+      // Destroy existing chart if it exists
+      if (interestChart) {
+        interestChart.destroy();
+      }
+
+      // Create new chart
+      interestChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Compound Interest Over Time",
+            data: data,
+            borderColor: "#007bff",
+            borderWidth: 2,
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Days"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Amount (£)"
+              }
+            }
+          }
+        }
+      });
     }
   </script>
 </body>
